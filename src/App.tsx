@@ -3,13 +3,18 @@ import words from "./wordList.json";
 import HangmanDrawing from "./HangmanDrawing";
 import HangmanWord from "./HangmanWord";
 import Keyboard from "./Keyboard";
+import buttonStyle from "./button.module.css";
 
 function getWord() {
   return words[Math.floor(Math.random() * words.length)];
 }
+function getRandomKey(list: string[]) {
+  return list[Math.floor(Math.random() * list.length)];
+}
 
 function App() {
   const [wordToGuess, setWordToGuess] = useState(getWord);
+  const [clue, setClue] = useState(false);
 
   const [guessedLetters, setGuessedLetters] = useState<string[]>([]);
 
@@ -31,6 +36,18 @@ function App() {
   );
 
   useEffect(() => {
+    if (clue) {
+      const array1 = wordToGuess.split("");
+      const unGuessedWordArray = array1.filter(
+        (val) => !guessedLetters.includes(val)
+      );
+
+      addGuessedLetter(getRandomKey(unGuessedWordArray));
+      setClue(false);
+    }
+  }, [addGuessedLetter, clue, guessedLetters, wordToGuess]);
+
+  useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       const key = e.key;
       if (!key.match(/^[a-z]$/)) return;
@@ -44,7 +61,7 @@ function App() {
     return () => {
       document.removeEventListener("keypress", handler);
     };
-  }, [addGuessedLetter, guessedLetters]);
+  }, [addGuessedLetter, guessedLetters, clue, wordToGuess]);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -83,6 +100,15 @@ function App() {
         guessedLetters={guessedLetters}
         wordToGuess={wordToGuess}
       />
+      <div>
+        <button
+          className={buttonStyle.button}
+          title="click here for a clue"
+          onClick={() => setClue(true)}
+        >
+          Clue
+        </button>
+      </div>
       <div style={{ alignSelf: "stretch" }}>
         <Keyboard
           disabled={isWinner || isLoser}
